@@ -19,3 +19,9 @@ func (domain *Domain) CreateSession(email string) (*Session) {
 func (domain *Domain) CreateTask(name string, user *User) (*Task) {
 	return &Task{Name: name, UserID: user.ID}
 }
+
+func (domain *Domain) CreateToken(email string) (*Token) {
+	token := &Token{}
+	token.GenerateToken(email)
+	return token
+}

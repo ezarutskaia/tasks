@@ -18,22 +18,36 @@ func (controller *Controller) CreateUser(email string, password string) (id int,
 	return id, err
 }
 
-func (controller *Controller) CreateSession(email string) (id int, err error) {
-	session := controller.Domain.CreateSession(email)
-	id, err := controller.Repo.SaveModel(session)
-	return id, err
-}
-
-func (controller *Controller) CreateTask(name string, email string) (id int, err error) {
+func (controller *Controller) CreateSession(email string) string {
 	user, err := controller.Repo.GetUser(email)
 	if err == nil {
-		session, err := controller.Repo.GetSession(email)
-		if err == nil {
-			task := controller.Domain.CreateTask(name, user)
-			id, err := controller.Repo.SaveModel(task)
-			return id, err
-		}
+		controller.Domain.CreateSession(email)
+		controller.Repo.SaveModel(session)
+		token := controller.Domain.CreateToken(email)
+		return token.Value
 	}
+	return ""
+}
+
+func (controller *Controller) ValidationSession(email string, token string) (user *User, err error) {
+	session, err := controller.Repo.GetSession(email)
+		if err == nil {
+			newToken := controller.Domain.CreateToken(email)
+			if token == newToken.Value {
+				user, err := controller.Repo.GetUser(email)
+				return user, nil
+			}
+		}
+		return &User{}, err
+}
+
+func (controller *Controller) CreateTask(name string, email string, token string) (id int, err error) {
+	user, err := controller.ValidationSession(email, token)
+	if err == nil {
+		task := controller.Domain.CreateTask(name, user)
+		id, err := controller.Repo.SaveModel(task)
+		return id, nil
+		}
 	return 0, err
 }
 
