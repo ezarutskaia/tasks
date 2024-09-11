@@ -10,3 +10,7 @@ type Task struct {
 	Name     string
 	UserID   int
 }
+
+func (task *Task) GetID() int {
+	return task.ID
+}

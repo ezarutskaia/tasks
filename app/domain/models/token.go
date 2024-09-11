@@ -29,6 +29,7 @@ func (token *Token) GenerateToken(email string) *Token {
 }
 
 func (token *Token) ValidToken(email string) bool {
-	newToken := CreateToken(email)
+	newToken := new(Token)
+	newToken.GenerateToken(email)
 	return token.Value == newToken.Value
 }

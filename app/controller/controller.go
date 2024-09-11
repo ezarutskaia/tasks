@@ -32,8 +32,7 @@ func (controller *Controller) CreateSession(email string) string {
 func (controller *Controller) ValidationSession(email string, token string) (user *User, err error) {
 	session, err := controller.Repo.GetSession(email)
 		if err == nil {
-			newToken := controller.Domain.CreateToken(email)
-			if token == newToken.Value {
+			if token.ValidToken(email) {
 				user, err := controller.Repo.GetUser(email)
 				return user, nil
 			}
@@ -51,10 +50,10 @@ func (controller *Controller) CreateTask(name string, email string, token string
 	return 0, err
 }
 
-func (controller *Controller) DeleteTask(id int, email string) (err error) {
+func (controller *Controller) DeleteTask(id int, email string, token string) (err error) {
 	task, err := controller.Repo.GetTask(id)
 	if err == nil {
-		session, err := controller.Repo.GetSession(email)
+		_, err := controller.ValidationSession(email, token)
 		if err == nil {
 			result := controller.Repo.DeleteNote(task, id)
 			return nil

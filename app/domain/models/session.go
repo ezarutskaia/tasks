@@ -11,3 +11,7 @@ type Session struct {
 	Email string 
 	Endsession time.Time
 }
+
+func (session *Session) GetID() int {
+	return session.ID
+}

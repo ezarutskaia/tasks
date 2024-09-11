@@ -1,23 +1,21 @@
 package repository
 
 import (
-	"log"
-	"errors"
 	"gorm.io/gorm"
 	"tasks/app/domain/models"
 )
 
 type Repository struct {
-	DB **gorm.DB
+	DB *gorm.DB
 }
 
 func (repo *Repository) Automigrate (model interface{}) {
-	(*repo.DB).Automigrate(model)
+	repo.DB.AutoMigrate(model)
 }
 
-func (repo *Repository) SaveModel (model interface{}) (id int, err error) {
+func (repo *Repository) SaveModel (model models.HasID) (id int, err error) {
 	result := (*repo.DB).Create(model)
-	return model.ID, result.Error
+	return model.GetID(), result.Error
 }
 
 func (repo *Repository) GetUser (email string) (user *models.User, err error) {
@@ -32,10 +30,10 @@ func (repo *Repository) GetSession (email string) (session *models.Session, err 
 
 func (repo *Repository) GetTask (id int) (task *models.Task, err error) {
 	result := (*repo.DB).Where("id = ?", id).First(&task)
-	return session, result.Error
+	return task, result.Error
 }
 
-func (repo *Repository) DeleteNote (model interface{}, id string) err error {
+func (repo *Repository) DeleteNote (model interface{}, id string) error {
 	result := (*repo.DB).Delete(model, id)
 	return result.Error
 }
