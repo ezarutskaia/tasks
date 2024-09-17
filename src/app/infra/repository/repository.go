@@ -33,7 +33,7 @@ func (repo *Repository) GetTask (id int) (task *models.Task, err error) {
 	return task, result.Error
 }
 
-func (repo *Repository) DeleteNote (model interface{}, id string) error {
+func (repo *Repository) DeleteNote (model interface{}, id int) error {
 	result := (*repo.DB).Delete(model, id)
 	return result.Error
 }
