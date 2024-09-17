@@ -1,7 +1,7 @@
 package infra
 
 import (
-	"tasks/app/infra/repository"
+	"tasks/src/app/infra/repository"
 )
 
 type Infra struct {

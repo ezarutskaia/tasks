@@ -1,9 +1,9 @@
 package app
 
 import (
-	"tasks/app/domain"
-	"tasks/app/infra"
-	"tasks/app/interfaces"
+	"tasks/src/app/domain"
+	"tasks/src/app/infra"
+	"tasks/src/app/interfaces"
 
 )
 

@@ -1,0 +1,41 @@
+services:
+  # Go    
+  golang:
+    container_name: golang
+    build:
+      dockerfile: Dockerfile
+    volumes:
+      - ./src:/go/src
+    ports:
+      - '6050:6030'    
+    command: tail -F anything
+
+  # MySQL container
+  sql:
+    container_name: sql
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: tasks
+      MYSQL_PASSWORD: tasks
+    ports:
+      - '4306:3306'
+    volumes:
+      - ./mysql:/var/lib/mysql
+
+  # RabbitMQ container
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"  # основной порт RabbitMQ
+      - "15672:15672" # порт управления RabbitMQ (Management UI)
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+volumes:
+  rabbitmq_data:

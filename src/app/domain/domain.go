@@ -1,7 +1,7 @@
 package domain
 
 import (
-	"tasks/app/domain/models"
+	"tasks/src/app/domain/models"
 	"time"
 )
 

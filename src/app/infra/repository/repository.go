@@ -2,7 +2,7 @@ package repository
 
 import (
 	"gorm.io/gorm"
-	"tasks/app/domain/models"
+	"tasks/src/app/domain/models"
 )
 
 type Repository struct {
