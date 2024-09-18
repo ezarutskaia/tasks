@@ -7,6 +7,6 @@ import (
 
 func main() {
 	db := repository.SqlConnection()
-	repo := &repository.Repository{DB: db,}
-	repo.Automigrate(&models.User{})
+	//repo := &repository.Repository{DB: db,}
+	(*db).AutoMigrate(&models.User{}, &models.Session{}, &models.Task{})
 }

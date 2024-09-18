@@ -9,9 +9,9 @@ type Repository struct {
 	DB *gorm.DB
 }
 
-func (repo *Repository) Automigrate (model interface{}) {
-	repo.DB.AutoMigrate(model)
-}
+// func (repo *Repository) Automigrate (model ...interface{}) {
+// 	repo.DB.AutoMigrate(model)
+// }
 
 func (repo *Repository) SaveModel (model models.HasID) (id int, err error) {
 	result := (*repo.DB).Create(model)
