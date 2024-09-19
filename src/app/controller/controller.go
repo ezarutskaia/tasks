@@ -45,7 +45,7 @@ func (controller *Controller) CreateTask(user *models.User, name string) (id int
 	return id, err
 }
 
-func (controller *Controller) DeleteTask(id int, email string, token string) (err error) {
+func (controller *Controller) DeleteTask(id int) (err error) {
 	task, err := controller.Repo.GetTask(id)
 	if err == nil {
 		result := controller.Repo.DeleteNote(task, id)

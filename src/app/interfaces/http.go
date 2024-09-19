@@ -2,6 +2,7 @@ package interfaces
 
 import (
 	"fmt"
+	"strconv"
 	"net/http"
 	"tasks/src/app/controller"
 	"github.com/labstack/echo/v4"
@@ -10,9 +11,13 @@ import (
 
 type HttpServer struct{}
 
+type RequestBody struct {
+	Name string `json:"name"`
+}
+
 type Options struct {
     Message  string
-    Data   map[string]string
+    Data   map[string]interface{}
 }
 
 func (server HttpServer) Response (c echo.Context, options Options) (error) {
@@ -34,17 +39,17 @@ func (server HttpServer) HandleHttpRequest(controller *controller.Controller) {
 			return server.Response(c, Options{
 				Message: "data reading error",
 			})
-		  }
+		}
 
 		id, err := controller.CreateUser(user.Email, user.Password)
 		if err != nil {
 			return server.Response(c, Options{
 				Message: "data recording error",
 			})
-		  }
+		}
 
 		return server.Response(c, Options{
-			Data:    map[string]string{"id": string(id)},
+			Data:    map[string]interface{}{"id": id},
 		})
 	})
 
@@ -56,14 +61,14 @@ func (server HttpServer) HandleHttpRequest(controller *controller.Controller) {
 			return server.Response(c, Options{
 				Message: "data reading error",
 			})
-		  }
+		}
 
 		userDB, err := controller.Repo.GetUser(user.Email)
 		if err != nil {
 			return server.Response(c, Options{
 				Message: "user is not exist",
 			})
-		  }
+		}
 		
 		if user.Password != userDB.Password {
 			return server.Response(c, Options{
@@ -73,7 +78,69 @@ func (server HttpServer) HandleHttpRequest(controller *controller.Controller) {
 
 		token := controller.CreateSession(user.Email)
 		return server.Response(c, Options{
-			Data:    map[string]string{"token": token},
+			Data:    map[string]interface{}{"token": token},
+		})
+	})
+
+	// task/add
+
+	e.POST("/task/add", func(c echo.Context) (err error) {
+		email := c.Request().Header.Get("Email")
+
+		var body RequestBody
+		if err := c.Bind(&body); err != nil {
+			return server.Response(c, Options{
+				Message: "data reading error",
+			})
+		}
+
+		user, err := controller.Repo.GetUser(email)
+		if err != nil {
+			return server.Response(c, Options{
+				Message: "user is not exist",
+			})
+		}
+		
+		id, err := controller.CreateTask(user, body.Name)
+		if err != nil {
+			return server.Response(c, Options{
+				Message: "data recording error",
+			})
+		}
+
+		return server.Response(c, Options{
+			Data:    map[string]interface{}{"id": id},
+		})
+	})
+
+	// task/del
+
+	e.DELETE("/task/:id", func(c echo.Context) (err error) {
+		idParam := c.Param("id")
+		id,_ := strconv.Atoi(idParam)
+		err = controller.DeleteTask(id)
+		if err != nil {
+			return server.Response(c, Options{
+				Message: "task is not exist",
+			})
+		}
+
+		return server.Response(c, Options{
+			Message: "task was deleted",
+		})
+	})
+
+	// task/list
+
+	e.GET("/task/list", func(c echo.Context) (err error) {
+		tasks, err := controller.Repo.GetTasks()
+		if err != nil {
+			return server.Response(c, Options{
+				Message: "task is not exist",
+			})
+		}
+		return server.Response(c, Options{
+			Data:    map[string]interface{}{"list of tasks": tasks},
 		})
 	})
 
