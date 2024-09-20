@@ -30,6 +30,32 @@ func (server HttpServer) Response (c echo.Context, options Options) (error) {
 func (server HttpServer) HandleHttpRequest(controller *controller.Controller) {
 	fmt.Println("HTTP server have started.")
 	e := echo.New()
+
+	taskGroup := e.Group("/task")
+
+	taskGroup.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+
+			email := c.Request().Header.Get("Email")
+			tokenString := c.Request().Header.Get("Token")
+			if email == "" || tokenString == "" {
+				return server.Response(c, Options{
+					Message: "no token or email",
+				})
+			}
+
+			token := &models.Token{Value: tokenString}
+
+			_, err := controller.ValidationSession(token, email)
+			if err != nil {
+				return server.Response(c, Options{
+					Message: "invalid token or email",
+				})
+			}
+
+			return next(c)
+		}
+	})
 	
 	//	Create user
 
@@ -84,7 +110,7 @@ func (server HttpServer) HandleHttpRequest(controller *controller.Controller) {
 
 	// task/add
 
-	e.POST("/task/add", func(c echo.Context) (err error) {
+	taskGroup.POST("/add", func(c echo.Context) (err error) {
 		email := c.Request().Header.Get("Email")
 
 		var body RequestBody
@@ -115,7 +141,7 @@ func (server HttpServer) HandleHttpRequest(controller *controller.Controller) {
 
 	// task/del
 
-	e.DELETE("/task/:id", func(c echo.Context) (err error) {
+	taskGroup.DELETE("/delete/:id", func(c echo.Context) (err error) {
 		idParam := c.Param("id")
 		id,_ := strconv.Atoi(idParam)
 		err = controller.DeleteTask(id)
@@ -132,7 +158,7 @@ func (server HttpServer) HandleHttpRequest(controller *controller.Controller) {
 
 	// task/list
 
-	e.GET("/task/list", func(c echo.Context) (err error) {
+	taskGroup.GET("/list", func(c echo.Context) (err error) {
 		tasks, err := controller.Repo.GetTasks()
 		if err != nil {
 			return server.Response(c, Options{
