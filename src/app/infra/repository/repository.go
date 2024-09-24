@@ -23,6 +23,11 @@ func (repo *Repository) GetUser (email string) (user *models.User, err error) {
 	return user, result.Error
 }
 
+func (repo *Repository) GetUserById (id int) (user *models.User, err error) {
+	result := (*repo.DB).Where("id = ?", id).First(&user)
+	return user, result.Error
+}
+
 func (repo *Repository) GetSession (email string) (session *models.Session, err error) {
 	result := (*repo.DB).Where("email = ? AND endsession > NOW()", email).Last(&session)
 	return session, result.Error
@@ -31,6 +36,11 @@ func (repo *Repository) GetSession (email string) (session *models.Session, err 
 func (repo *Repository) GetTask (id int) (task *models.Task, err error) {
 	result := (*repo.DB).Where("id = ?", id).First(&task)
 	return task, result.Error
+}
+
+func (repo *Repository) GetTasksByIds (ids []int) (tasks []*models.Task, err error) {
+	result := (*repo.DB).Where("id IN ?", ids).Find(&tasks)
+	return tasks, result.Error
 }
 
 func (repo *Repository) GetTasks () (tasks []*models.Task, err error) {

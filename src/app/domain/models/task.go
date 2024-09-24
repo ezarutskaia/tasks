@@ -6,9 +6,9 @@ import (
 
 type Task struct {
 	gorm.Model
-	ID int `gorm:"primaryKey"`
-	Name     string
-	UserID   int
+	ID int `gorm:"primaryKey" json:"id"`
+	Name     string `json:"name"`
+	UserID   int `json:"user_id"`
 }
 
 func (task *Task) GetID() int {

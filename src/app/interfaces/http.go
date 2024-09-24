@@ -2,8 +2,10 @@ package interfaces
 
 import (
 	"fmt"
+	"math/rand"
 	"strconv"
 	"net/http"
+	"tasks/src/app/infra/pdf"
 	"tasks/src/app/controller"
 	"github.com/labstack/echo/v4"
 	"tasks/src/app/domain/models"
@@ -168,6 +170,54 @@ func (server HttpServer) HandleHttpRequest(controller *controller.Controller) {
 		return server.Response(c, Options{
 			Data:    map[string]interface{}{"list of tasks": tasks},
 		})
+	})
+
+	// task/pdf
+
+	taskGroup.POST("/pdf", func(c echo.Context) (err error) {
+		var ids []int
+		if err := c.Bind(&ids); err != nil {
+			return server.Response(c, Options{
+				Message: "data reading error",
+			})
+		}
+		
+		tasks, err := controller.Repo.GetTasksByIds(ids)
+		if err != nil {
+			return server.Response(c, Options{
+				Message: "task is not exist",
+			})
+		}
+
+		var tasksDTO []*pdf.TaskDTO
+		var weight int
+
+		for _,task := range(tasks) {
+			user, err := controller.Repo.GetUserById(task.UserID)
+			if err != nil {
+				return server.Response(c, Options{
+					Message: "user is not exist",
+				})
+			}
+			weight = rand.Intn(10000)
+			tasksDTO = append(tasksDTO, &pdf.TaskDTO{
+				Id: task.ID, 
+				Title: task.Name, 
+				User: user.Email, 
+				Weight: weight})
+		}
+
+		err = controller.PrintTasks(tasksDTO)
+		if err != nil {
+			return server.Response(c, Options{
+				Message: "error of print of tasks",
+			})
+		}
+
+		return server.Response(c, Options{
+			Data:    map[string]interface{}{"list of tasks": tasks},
+		})
+
 	})
 
 	e.Logger.Fatal(e.Start(":1323"))
