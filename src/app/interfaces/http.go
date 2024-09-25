@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"strconv"
 	"net/http"
+	"encoding/json"
 	"tasks/src/app/infra/pdf"
 	"tasks/src/app/controller"
 	"github.com/labstack/echo/v4"
@@ -15,6 +16,11 @@ type HttpServer struct{}
 
 type RequestBody struct {
 	Name string `json:"name"`
+}
+
+type ServiceResponse struct {
+    Data    string `json:"data"`
+    Message string `json:"message"`
 }
 
 type Options struct {
@@ -207,15 +213,24 @@ func (server HttpServer) HandleHttpRequest(controller *controller.Controller) {
 				Weight: weight})
 		}
 
-		err = controller.PrintTasks(tasksDTO)
+		body, err := controller.PrintTasks(tasksDTO)
 		if err != nil {
 			return server.Response(c, Options{
-				Message: "error of print of tasks",
+				Message: "Print service is not available",
+			})
+		}
+
+		var serviceResp ServiceResponse
+		err = json.Unmarshal(body, &serviceResp)
+		if err != nil {
+		return server.Response(c, Options{
+			Message: "Reading response error",
 			})
 		}
 
 		return server.Response(c, Options{
-			Data:    map[string]interface{}{"list of tasks": tasks},
+			Message: serviceResp.Message,
+			Data:    map[string]interface{}{"count": serviceResp.Data},
 		})
 
 	})

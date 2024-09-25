@@ -1,9 +1,6 @@
 package controller
 
 import (
-	"bytes"
-    "encoding/json"
-    "net/http"
 	"tasks/src/app/domain"
 	"tasks/src/app/infra/pdf"
 	"tasks/src/app/domain/models"
@@ -13,6 +10,7 @@ import (
 type Controller struct {
 	Repo   *repository.Repository
 	Domain *domain.Domain
+	Pdf *pdf.Pdf
 }
 
 func (controller *Controller) CreateUser(email string, password string) (id int, err error) {
@@ -58,27 +56,11 @@ func (controller *Controller) DeleteTask(id int) (err error) {
 	return err
 }
 
-func (controller *Controller) PrintTasks(tasks []*pdf.TaskDTO) (err error) {
-	url := "http://127.0.0.1:8050/pdf"
+func (controller *Controller) PrintTasks(tasks []*pdf.TaskDTO) ([]byte, error) {
 
-	taskJson, err := json.Marshal(tasks)
-    if err != nil {
-        return err
+	body, err := controller.Pdf.TaskToPdf(tasks)
+	if err != nil {
+        return nil, err
     }
-
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(taskJson))
-    if err != nil {
-        return err
-    }
-
-    req.Header.Set("Content-Type", "application/json")
-
-	client := &http.Client{}
-    resp, err := client.Do(req)
-    if err != nil {
-        return err
-    }
-    defer resp.Body.Close()
-
-	return nil
+    return body, nil
 }
