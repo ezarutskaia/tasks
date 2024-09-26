@@ -5,6 +5,8 @@ import (
 	"math/rand"
 	"strconv"
 	"net/http"
+	"context"
+	"errors"
 	"encoding/json"
 	"tasks/src/app/infra/pdf"
 	"tasks/src/app/controller"
@@ -215,9 +217,17 @@ func (server HttpServer) HandleHttpRequest(controller *controller.Controller) {
 
 		body, err := controller.PrintTasks(tasksDTO)
 		if err != nil {
-			return server.Response(c, Options{
-				Message: "Print service is not available",
-			})
+			if errors.Is(err, context.DeadlineExceeded) {
+				// Ошибка таймаута
+				return server.Response(c, Options{
+					Message: "Print service timed out",
+				})
+			} else {
+				// Другая ошибка (например, сервис недоступен)
+				return server.Response(c, Options{
+					Message: "Print service is not available",
+				})
+			}
 		}
 
 		var serviceResp ServiceResponse
