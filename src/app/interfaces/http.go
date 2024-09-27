@@ -2,6 +2,7 @@ package interfaces
 
 import (
 	"fmt"
+	"sync"
 	"math/rand"
 	"strconv"
 	"net/http"
@@ -215,34 +216,59 @@ func (server HttpServer) HandleHttpRequest(controller *controller.Controller) {
 				Weight: weight})
 		}
 
-		body, err := controller.PrintTasks(tasksDTO)
-		if err != nil {
-			if errors.Is(err, context.DeadlineExceeded) {
-				// Ошибка таймаута
-				return server.Response(c, Options{
-					Message: "Print service timed out",
-				})
-			} else {
-				// Другая ошибка (например, сервис недоступен)
-				return server.Response(c, Options{
-					Message: "Print service is not available",
-				})
-			}
+		var servicesResp []ServiceResponse
+		var printErrors []string
+		var wg sync.WaitGroup
+		var mu sync.Mutex
+
+		wg.Add(len(tasksDTO))
+
+		for _,taskDTO := range(tasksDTO) {
+			task := taskDTO
+			go func(taskDTO *pdf.TaskDTO) {
+				defer wg.Done()
+
+				body, err := controller.PrintTask(taskDTO)
+				if err != nil {
+					mu.Lock()
+					if errors.Is(err, context.DeadlineExceeded) {
+						printErrors = append(printErrors, fmt.Sprintf("Print service timed out for task %d", taskDTO.Id))
+					} else {
+						printErrors = append(printErrors, fmt.Sprintf("Print service is not available for task %d", taskDTO.Id))
+					}
+					mu.Unlock()
+					return
+				}
+
+				var serviceResp ServiceResponse
+				err = json.Unmarshal(body, &serviceResp)
+				if err != nil {
+					mu.Lock()
+					printErrors = append(printErrors, fmt.Sprintf("Reading response error for task %d", taskDTO.Id))
+					mu.Unlock()
+					return
+				}
+
+				mu.Lock()
+				servicesResp = append(servicesResp, serviceResp)
+				mu.Unlock()
+
+			} (task)
 		}
 
-		var serviceResp ServiceResponse
-		err = json.Unmarshal(body, &serviceResp)
-		if err != nil {
-		return server.Response(c, Options{
-			Message: "Reading response error",
+		wg.Wait()
+
+		if len(printErrors) > 0 {
+			return server.Response(c, Options{
+				Message: "Some tasks failed",
+				Data:    map[string]interface{}{"count": len(printErrors)},
 			})
 		}
-
+	
 		return server.Response(c, Options{
-			Message: serviceResp.Message,
-			Data:    map[string]interface{}{"count": serviceResp.Data},
+			Message: "All tasks were printed successfully",
+			Data:    map[string]interface{}{"count": len(servicesResp)},
 		})
-
 	})
 
 	e.Logger.Fatal(e.Start(":1323"))

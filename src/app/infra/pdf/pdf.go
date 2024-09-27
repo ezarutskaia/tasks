@@ -3,6 +3,7 @@ package pdf
 import (
 	"time"
 	"bytes"
+	"math/rand"
 	"context"
 	"io/ioutil"
     "encoding/json"
@@ -13,11 +14,11 @@ type Pdf struct {
 	URL string
 }
 
-func (pdf *Pdf) TaskToPdf(tasks []*TaskDTO) ([]byte, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+func (pdf *Pdf) TaskToPdf(task *TaskDTO) ([]byte, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(rand.Intn(300))*time.Second)
     defer cancel()
 
-	taskJson, err := json.Marshal(tasks)
+	taskJson, err := json.Marshal(task)
     if err != nil {
         return nil, err
     }

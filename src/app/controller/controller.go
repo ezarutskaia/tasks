@@ -56,9 +56,9 @@ func (controller *Controller) DeleteTask(id int) (err error) {
 	return err
 }
 
-func (controller *Controller) PrintTasks(tasks []*pdf.TaskDTO) ([]byte, error) {
+func (controller *Controller) PrintTask(task *pdf.TaskDTO) ([]byte, error) {
 
-	body, err := controller.Pdf.TaskToPdf(tasks)
+	body, err := controller.Pdf.TaskToPdf(task)
 	if err != nil {
         return nil, err
     }
