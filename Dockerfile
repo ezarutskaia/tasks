@@ -4,6 +4,7 @@ WORKDIR /go/src
 
 COPY ./src /go/src
 
+RUN go mod init tasks
 RUN go get -u gorm.io/gorm
 RUN go get -u gorm.io/driver/mysql
 RUN go get -u github.com/labstack/echo/v4

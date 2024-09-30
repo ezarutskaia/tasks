@@ -184,6 +184,7 @@ func (server HttpServer) HandleHttpRequest(controller *controller.Controller) {
 	// task/pdf
 
 	taskGroup.POST("/pdf", func(c echo.Context) (err error) {
+		fmt.Println("Request on pdf")
 		var ids []int
 		if err := c.Bind(&ids); err != nil {
 			return server.Response(c, Options{
@@ -243,12 +244,13 @@ func (server HttpServer) HandleHttpRequest(controller *controller.Controller) {
 				var serviceResp ServiceResponse
 				err = json.Unmarshal(body, &serviceResp)
 				if err != nil {
+					fmt.Printf("4 -> %s\n", serviceResp)
 					mu.Lock()
 					printErrors = append(printErrors, fmt.Sprintf("Reading response error for task %d", taskDTO.Id))
 					mu.Unlock()
 					return
 				}
-
+				fmt.Printf("5 -> %s\n", serviceResp)
 				mu.Lock()
 				servicesResp = append(servicesResp, serviceResp)
 				mu.Unlock()

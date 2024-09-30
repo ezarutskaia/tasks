@@ -5,6 +5,8 @@ import (
 	"tasks/src/app/infra/pdf"
 	"tasks/src/app/domain/models"
 	"tasks/src/app/infra/repository"
+
+	"fmt"
 )
 
 type Controller struct {
@@ -57,7 +59,7 @@ func (controller *Controller) DeleteTask(id int) (err error) {
 }
 
 func (controller *Controller) PrintTask(task *pdf.TaskDTO) ([]byte, error) {
-
+	fmt.Println("Controller PrintTask")
 	body, err := controller.Pdf.TaskToPdf(task)
 	if err != nil {
         return nil, err

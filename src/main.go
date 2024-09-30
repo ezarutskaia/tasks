@@ -14,7 +14,7 @@ import (
 func main() {
 	fmt.Println("Initialize app.")
 	db := repository.SqlConnection()
-	url := "http://127.0.0.1:8050/pdf"
+	url := "http://localhost:8050/pdf"
 
 	app := &app.App{
 		Domain: &domain.Domain{},
